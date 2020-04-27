@@ -113,6 +113,9 @@
 
 .ace_heading,
 .ace_markup.ace_heading,
+.ace_markup.ace_list {
+  color: #98c375
+}
 .ace_string {
   color: #98c375
 }
