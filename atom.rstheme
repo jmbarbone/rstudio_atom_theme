@@ -132,6 +132,10 @@
   color: #56606e
 }
 
+.ace_comment ace_sectionhead {
+  color: #F0C674
+}
+
 .ace_indent-guide {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWNgYGBgYHB3d/8PAAOIAdULw8qMAAAAAElFTkSuQmCC) right repeat-y
 }
