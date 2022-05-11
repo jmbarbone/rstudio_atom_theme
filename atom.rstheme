@@ -68,13 +68,26 @@
   color: #c681dd
 }
 
-.ace_keyword.ace_operator {
+.ace_operator {
+/*   color: #abb2bf; */
+  color: #81A2BE;
+  }
+
+.ace_punctuation {
   color: #abb2bf
 }
 
+/* For values like %in% */
+.ace_operator.ace_infix {
+  color: #81A2BE
+}
+
+
+
+
 .ace_constant.ace_character,
 .ace_constant.ace_language {
-color: #DE935F
+ color: #DE935F
 }
 .ace_constant.ace_numeric {
   color: #F0C674
@@ -97,7 +110,7 @@ color: #DE935F
 
 .ace_invalid.ace_deprecated {
   color: #CED2CF;
-  background-color: #B798BF
+  background-color: #DF5F5F
 }
 
 .ace_fold {
@@ -746,4 +759,23 @@ color: #DE935F
 .rstudio-themes-flat.rstudio-themes-dark-menus .ace_editor.ace_autocomplete .ace_marker-layer .ace_line-hover {
    background: rgba(255, 255, 255, 0.15);
    border: none
+}
+
+.token.string {
+  color: #690;
+  text-shadow: 0 0 #690;
+}
+
+.token.comment {
+  text-shadow: 0 0 black;
+}
+
+.token.boolean {
+  text-shadow: 0 0 black;
+}
+
+.token.operator {
+  color: #9a6e3a;
+  text-shadow: 0 0 black;
+  background: none;
 }
