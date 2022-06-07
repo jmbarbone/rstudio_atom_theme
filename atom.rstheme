@@ -763,21 +763,25 @@
    border: none
 }
 
+.token {
+   text-shadow: 0 0 black;
+}
+
 .token.string {
   color: #690;
   text-shadow: 0 0 #690;
 }
 
-.token.comment {
-  text-shadow: 0 0 black;
+.token.keyword {
+  color: #81A2BE
 }
 
-.token.boolean {
-  text-shadow: 0 0 black;
+.token.number {
+  color: #DE935F
 }
 
 .token.operator {
-  color: #9a6e3a;
+  color: #81A2BE;
   text-shadow: 0 0 black;
   background: none;
 }
