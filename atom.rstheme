@@ -71,19 +71,21 @@
 .ace_operator {
 /*   color: #abb2bf; */
   color: #81A2BE;
-  }
+}
 
 .ace_punctuation {
   color: #abb2bf
 }
 
 /* For values like %in% */
-.ace_operator.ace_infix {
+/* .ace_operator.ace_infix { */
+.ace_operator {
   color: #81A2BE
 }
 
-
-
+.ace_comment.ace_keyword {
+  color: #CC6666
+}
 
 .ace_constant.ace_character,
 .ace_constant.ace_language {
