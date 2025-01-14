@@ -1,0 +1,151 @@
+#'/usr/bin/env Rscript
+
+# Find the list of keywords used by Rstudio and add new items
+#
+# Note: this doesn't control for duplicates
+
+if (.Platform$OS.type != "unix") {
+  stop("only works on Unix")
+}
+
+new <- commandArgs(TRUE)
+
+DEFAULTS <- c(
+  # base
+  ".onAttach",
+  ".onDetach",
+  ".onLoad",
+  ".onUnload",
+  "all",
+  "any",
+  "assign",
+  "attachNamespace",
+  "attr",
+  "attributes",
+  "browser",
+  "c",
+  "class",
+  "commandArgs",
+  "loadNamespace",
+  "match.args",
+  "message",
+  "options",
+  "quit",
+  "q",
+  "requireNamespace",
+  "stopifnot",
+  "structure",
+  "typeof",
+  "unloadNamespace",
+  # rlang
+  "abort", 
+  "warn", 
+  # cnd
+  "cnd",
+  "condition",
+  # scribe
+  "command_args",
+  # fuj
+  "include",
+  "struct", 
+  # mark
+  "import",
+  "match_params",
+  # S7
+  "new_class",
+  NULL
+)
+
+if (length(new) == 0 || "--help" %in% new) {
+  cat(
+    "add-keywords",
+    "",
+    "Modify RStudio keywords",
+    "Potentially a dangerous operation",
+    "",
+    "ARGUMENTS",
+    " ...     keywords to add (white space trimmed)",
+    " --help  Displays this message",
+    " -D      use defaults",
+    "",
+    "DEFAULTS",
+    toString(DEFAULTS),
+    "",
+    sep = "\n"
+  )
+  quit("no")
+}
+
+new <- trimws(new)
+use_defaults <- "-D" %in% new
+new <- setdiff(new, "-D")
+ignore <- startsWith(new, "-")
+
+if (any(ignore)) {
+  cat("w Ignoring options: ", toString(new[ignore]), "\n")
+}
+
+new <- c(if (use_defaults) DEFAULTS, new[!ignore])
+
+if (!length(new)) {
+  stop("no keywords given, use -D for defaults")
+}
+
+# find 
+files <- list.files(
+  "/lib/rstudio/resources/app/www/rstudio", 
+  "\\.cache\\.js$",
+  full.names = TRUE
+)
+
+ok <- vapply(
+  files, 
+  function(file) {
+    text <- paste0(readLines(file, warn = FALSE), collapse = "")
+    find <- function(pat) grepl(pat, text, fixed = TRUE)
+    find("mode/r_highlight_rules") &&
+      # this should be good enough, right?
+      find("return switch try tryCatch stop warning require library attach")
+  },
+  NA
+)
+
+if (!any(ok)) {
+  stop("no files found")
+}
+
+js <- files[ok][1]
+x <- readLines(js, warn = FALSE)
+
+cat("i finding list\n")
+pat <- 'f=m.arrayToMap("return'
+m <- regexpr(pat, x, fixed = TRUE)
+if (any(m > 0)) {
+  cat("i inserting keyword indicators\n")
+  regmatches(x, m) <- 'f=m.arrayToMap("__.keywords.__ __.keywords.__ return'
+  all_new <- TRUE
+} else {
+  all_new <- FALSE
+}
+
+cat("i finding __.keywords.__\n")
+pat <- "(?<=__.keywords.__).*(?=__.keywords.__)"
+m <- regexpr(pat, x, perl = TRUE)
+
+if (any(m > 0)) {
+  if (!all_new) {
+    old <- regmatches(x, m)
+    cat("i old keyword(s) found:", toString(old), "\n")
+    old <- scan(text = old, what = character())
+    if (all(new %in% old)) {
+      stop("x No new keywords")
+    }
+    new <- unique(c(old, new))
+  }
+  cat("i adding ", toString(new), "\n")
+  new <- paste0(" ", paste0(new, collapse = " "), " ")
+  regmatches(x, m) <- new
+  writeLines(x, js)
+}
+
+cat("Restart RStudio to see effects\n")
