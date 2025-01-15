@@ -1,82 +1,180 @@
 #'/usr/bin/env Rscript
 
+# TODO this should be
+# add-highlight [keywords|specialFunctions|buildInConstratins|k|s|b] ... [-D]
+
 # Find the list of keywords used by Rstudio and add new items
 #
 # Note: this doesn't control for duplicates
 
-if (.Platform$OS.type != "unix") {
-  stop("only works on Unix")
-}
-
-new <- commandArgs(TRUE)
-
-DEFAULTS <- c(
-  # base
-  ".onAttach",
-  ".onDetach",
-  ".onLoad",
-  ".onUnload",
-  "all",
-  "any",
-  "assign",
-  "attachNamespace",
-  "attr",
-  "attributes",
-  "browser",
-  "c",
-  "class",
-  "commandArgs",
-  "loadNamespace",
-  "match.args",
-  "message",
-  "options",
-  "quit",
-  "q",
-  "requireNamespace",
-  "stopifnot",
-  "structure",
-  "typeof",
-  "unloadNamespace",
-  # rlang
-  "abort", 
-  "warn", 
-  # cnd
-  "cnd",
-  "condition",
-  # scribe
-  "command_args",
-  # fuj
-  "include",
-  "struct", 
-  # mark
-  "import",
-  "match_params",
-  # S7
-  "new_class",
-  NULL
+DEFAULTS <- list(
+  specialFunctions = c(
+    # base
+    ".libPaths",
+    ".onAttach",
+    ".onDetach",
+    ".onLoad",
+    ".onUnload",
+    "all",
+    "any",
+    "assign",
+    "attachNamespace",
+    "attr",
+    "attributes",
+    "browser",
+    "c",
+    "class",
+    "commandArgs",
+    "loadNamespace",
+    "match.args",
+    "message",
+    "missing",
+    "options",
+    "print",
+    "quit",
+    "q",
+    "requireNamespace",
+    "stopifnot",
+    "structure",
+    "substitute",
+    "typeof",
+    "unloadNamespace",
+    # utils
+    "method",
+    "View",
+    # rlang
+    "abort",
+    "warn",
+    # cnd
+    "cnd",
+    "condition",
+    # scribe
+    "command_args",
+    # fuj
+    "include",
+    "struct",
+    # mark
+    "import",
+    "match_params",
+    # S7
+    "method",
+    "new_class",
+    "new_generic",
+    NULL
+  ),
+  builtInConstants = c(
+    # S7
+    "class_any",
+    "class_array",
+    "class_atomic",
+    "class_call",
+    "class_character",
+    "class_complex",
+    "class_construct",
+    "class_construct_expr",
+    "class_constructor",
+    "class_data.frame",
+    "class_Date",
+    "class_deparse",
+    "class_desc",
+    "class_dispatch",
+    "class_double",
+    "class_environment",
+    "class_expression",
+    "class_factor",
+    "class_flatten",
+    "class_formula",
+    "class_friendly",
+    "class_function",
+    "class_inherits",
+    "class_integer",
+    "class_language",
+    "class_list",
+    "class_logical",
+    "class_matrix",
+    "class_missing",
+    "class_name",
+    "class_numeric",
+    "class_POSIXct",
+    "class_POSIXlt",
+    "class_POSIXt",
+    "class_raw",
+    "class_register",
+    "class_type",
+    "class_validate",
+    "class_vector",
+    NULL
+  ),
+  keywords = NULL
 )
 
-if (length(new) == 0 || "--help" %in% new) {
+# TODO use scribe()
+ca <- commandArgs(TRUE)
+if (length(ca) == 0 || "--help" %in% tolower(ca) || "-h" %in% tolower(ca)) {
   cat(
     "add-keywords",
     "",
     "Modify RStudio keywords",
     "Potentially a dangerous operation",
     "",
+    "USAGE",
+    "  add-keywords [specialFunctions|builtInConstants|keywords|s|b|k] [...] [-D] [--help|-h]",
+    "",
     "ARGUMENTS",
-    " ...     keywords to add (white space trimmed)",
-    " --help  Displays this message",
-    " -D      use defaults",
+    "  type    specialFunctions, builtInConstraints, or keywords",
+    "  ...     keywords to add (white space trimmed)",
+    "  --help  Displays this message",
+    "  -D      use defaults",
     "",
     "DEFAULTS",
-    toString(DEFAULTS),
+    "  specialFunctions",
+    toString(DEFAULTS$specialFunctions),
+    "  builtInConstants",
+    toString(DEFAULTS$builtInConstants),
+    "  keywords",
+    toString(DEFAULTS$keywords %||% "<none>"),
     "",
     sep = "\n"
   )
   quit("no")
 }
 
-new <- trimws(new)
+type <- match.arg(
+  tolower(trimws(ca)[1L]),
+  tolower(c(
+    "specialFunctions",
+    "s",
+    "sf",
+    "functions",
+    "builtInConstants",
+    "b",
+    "bic",
+    "constants",
+    "keywords",
+    "k"
+  ))
+)
+
+type <- switch(
+  type,
+  s = ,
+  sf = ,
+  functions = ,
+  specialfunctions = "specialFunctions",
+  b = ,
+  bic = ,
+  constants = ,
+  builtinconstants = "builtInConstants",
+  k = ,
+  keywords = "keywords",
+  stop("something went wrong")
+)
+
+if (type != "specialFunctions") {
+  stop("not yet configured for type ", type)
+}
+
+new <- trimws(ca)[-1L]
 use_defaults <- "-D" %in% new
 new <- setdiff(new, "-D")
 ignore <- startsWith(new, "-")
@@ -85,21 +183,36 @@ if (any(ignore)) {
   cat("w Ignoring options: ", toString(new[ignore]), "\n")
 }
 
-new <- c(if (use_defaults) DEFAULTS, new[!ignore])
+new <- c(if (use_defaults) DEFAULTS[type], new[!ignore])
 
 if (!length(new)) {
   stop("no keywords given, use -D for defaults")
 }
 
-# find 
+# find
 files <- list.files(
-  "/lib/rstudio/resources/app/www/rstudio", 
-  "\\.cache\\.js$",
+  switch(
+    .Platform$OS.type,
+    linux = "/lib/rstudio/resources/app/www/rstudio",
+    windows = normalizePath(
+      file.path(
+        Sys.getenv("PROGRAMFILES"),
+        "RStudio",
+        "resources",
+        "app",
+        "www",
+        "rstudio"
+      ),
+      winslash = "/"
+    ),
+    stop("only available for linux and windows")
+  ),
+  pattern = "\\.cache\\.js$",
   full.names = TRUE
 )
 
 ok <- vapply(
-  files, 
+  files,
   function(file) {
     text <- paste0(readLines(file, warn = FALSE), collapse = "")
     find <- function(pat) grepl(pat, text, fixed = TRUE)
