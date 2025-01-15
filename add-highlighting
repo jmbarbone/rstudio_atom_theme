@@ -193,7 +193,7 @@ if (!length(new)) {
 files <- list.files(
   switch(
     .Platform$OS.type,
-    linux = "/lib/rstudio/resources/app/www/rstudio",
+    unix = "/lib/rstudio/resources/app/www/rstudio",
     windows = normalizePath(
       file.path(
         Sys.getenv("PROGRAMFILES"),
@@ -205,7 +205,7 @@ files <- list.files(
       ),
       winslash = "/"
     ),
-    stop("only available for linux and windows")
+    stop("only available for unix and windows")
   ),
   pattern = "\\.cache\\.js$",
   full.names = TRUE
