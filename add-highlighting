@@ -25,6 +25,8 @@ DEFAULTS <- list(
     "c",
     "class",
     "commandArgs",
+    "debug",
+    "debugonce",
     "loadNamespace",
     "match.args",
     "message",
@@ -38,6 +40,7 @@ DEFAULTS <- list(
     "structure",
     "substitute",
     "typeof",
+    "undebug",
     "unloadNamespace",
     # utils
     "method",
