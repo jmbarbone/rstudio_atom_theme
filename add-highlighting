@@ -1,4 +1,4 @@
-#'/usr/bin/env Rscript
+#! /usr/bin/env Rscript
 
 # TODO this should be
 # add-highlight [keywords|specialFunctions|buildInConstratins|k|s|b] ... [-D]
@@ -6,6 +6,7 @@
 # Find the list of keywords used by Rstudio and add new items
 #
 # Note: this doesn't control for duplicates
+
 
 DEFAULTS <- list(
   specialFunctions = c(
@@ -186,7 +187,7 @@ if (any(ignore)) {
   cat("w Ignoring options: ", toString(new[ignore]), "\n")
 }
 
-new <- c(if (use_defaults) DEFAULTS[type], new[!ignore])
+new <- c(if (use_defaults) DEFAULTS[[type]], new[!ignore])
 
 if (!length(new)) {
   stop("no keywords given, use -D for defaults")
@@ -253,6 +254,7 @@ if (any(m > 0)) {
     old <- regmatches(x, m)
     cat("i old keyword(s) found:", toString(old), "\n")
     old <- scan(text = old, what = character())
+    old <- trimws(old)
     if (all(new %in% old)) {
       stop("x No new keywords")
     }
@@ -261,7 +263,8 @@ if (any(m > 0)) {
   cat("i adding ", toString(new), "\n")
   new <- paste0(" ", paste0(new, collapse = " "), " ")
   regmatches(x, m) <- new
+  cat("i modifying ", js, "\n")
   writeLines(x, js)
 }
 
-cat("Restart RStudio to see effects\n")
+cat("i Restart RStudio to see effects\n")
