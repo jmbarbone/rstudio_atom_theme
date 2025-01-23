@@ -174,7 +174,7 @@ type <- switch(
   stop("something went wrong")
 )
 
-if (type != "specialFunctions") {
+if (type == "keywords") {
   stop("not yet configured for type ", type)
 }
 
@@ -231,22 +231,42 @@ if (!any(ok)) {
   stop("no files found")
 }
 
-js <- files[ok][1]
+js <- files[ok][1L]
 x <- readLines(js, warn = FALSE)
 
-cat("i finding list\n")
-pat <- 'f=m.arrayToMap("return'
+cat("i finding list in ", x, "\n")
+
+pat <- switch(
+  type,
+  specialFunctions = 'f=m.arrayToMap("return',
+  builtInConstants = 'n=m.arrayToMap("...',
+  stop("something went wrong")
+)
+
 m <- regexpr(pat, x, fixed = TRUE)
 if (any(m > 0)) {
   cat("i inserting keyword indicators\n")
-  regmatches(x, m) <- 'f=m.arrayToMap("__.keywords.__ __.keywords.__ return'
+  regmatches(x, m) <- switch(
+    type,
+    specialFunctions = 'f=m.arrayToMap("__.keywords.__ __.keywords.__ return',
+    builtInConstants = 'n=m.arrayToMap("__.keywords.__ __.keywords.__ ...',
+    stop("something went wrong")
+  )
   all_new <- TRUE
 } else {
   all_new <- FALSE
 }
 
 cat("i finding __.keywords.__\n")
-pat <- "(?<=__.keywords.__).*(?=__.keywords.__)"
+pat <- sprintf(
+  "(?<=__.keywords.__).*(?=__.keywords.__ %s)",
+  switch(
+    type,
+    specialFunctions = "return",
+    builtInConstants = "...",
+    stop("something went wrong")
+  )
+
 m <- regexpr(pat, x, perl = TRUE)
 
 if (any(m > 0)) {
@@ -264,7 +284,7 @@ if (any(m > 0)) {
   new <- paste0(" ", paste0(new, collapse = " "), " ")
   regmatches(x, m) <- new
   cat("i modifying ", js, "\n")
-  writeLines(x, js)
+  # writeLines(x, js)
 }
 
 cat("i Restart RStudio to see effects\n")
