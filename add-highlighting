@@ -125,10 +125,11 @@ if (length(ca) == 0 || "--help" %in% tolower(ca) || "-h" %in% tolower(ca)) {
     "  add-keywords [specialFunctions|builtInConstants|keywords|s|b|k] [...] [-D] [--help|-h]",
     "",
     "ARGUMENTS",
-    "  type    specialFunctions, builtInConstraints, or keywords",
-    "  ...     keywords to add (white space trimmed)",
-    "  --help  Displays this message",
-    "  -D      use defaults",
+    "  type     specialFunctions, builtInConstraints, or keywords",
+    "  ...      keywords to add (white space trimmed)",
+    "  --help   Displays this message",
+    "  -D       use defaults",
+    "  --reset  resets all keywords",
     "",
     "DEFAULTS",
     "  specialFunctions",
@@ -143,6 +144,17 @@ if (length(ca) == 0 || "--help" %in% tolower(ca) || "-h" %in% tolower(ca)) {
   quit("no")
 }
 
+new <- trimws(ca)[-1L]
+use_defaults <- "-D" %in% new
+reset <- "--reset" %in% new
+new <- setdiff(new, c("-D", "--reset"))
+ignore <- startsWith(new, "-")
+
+if (any(ignore)) {
+  cat("w Ignoring options: ", toString(new[ignore]), "\n")
+}
+
+# match on type for settin
 type <- match.arg(
   tolower(trimws(ca)[1L]),
   tolower(c(
@@ -178,19 +190,16 @@ if (type == "keywords") {
   stop("not yet configured for type ", type)
 }
 
-new <- trimws(ca)[-1L]
-use_defaults <- "-D" %in% new
-new <- setdiff(new, "-D")
-ignore <- startsWith(new, "-")
-
-if (any(ignore)) {
-  cat("w Ignoring options: ", toString(new[ignore]), "\n")
-}
-
-new <- c(if (use_defaults) DEFAULTS[[type]], new[!ignore])
-
-if (!length(new)) {
-  stop("no keywords given, use -D for defaults")
+if (reset) {
+  # "--reset" will ignore all aother others
+  if (use_defaults) {
+    warning("w Ignoring defaults")
+  }
+} else {
+  new <- c(if (use_defaults) DEFAULTS[[type]], new[!ignore])
+  if (!length(new)) {
+    stop("no keywords given, use -D for defaults")
+  }
 }
 
 # find
@@ -234,7 +243,14 @@ if (!any(ok)) {
 js <- files[ok][1L]
 x <- readLines(js, warn = FALSE)
 
-cat("i finding list in ", x, "\n")
+if (reset) {
+  cat("i resetting keywords\n")
+  x <- gsub(sprintf("__[.]%s%[.]__.*__[.]%s%[.]__\\s+", type, type), "", x)
+  writeLines(x, js)
+  quit("no")
+}
+
+cat("i finding list in ", js, "\n")
 
 pat <- switch(
   type,
@@ -248,8 +264,8 @@ if (any(m > 0)) {
   cat("i inserting keyword indicators\n")
   regmatches(x, m) <- switch(
     type,
-    specialFunctions = 'f=m.arrayToMap("__.keywords.__ __.keywords.__ return',
-    builtInConstants = 'n=m.arrayToMap("__.keywords.__ __.keywords.__ ...',
+    specialFunctions = sprintf('f=m.arrayToMap("__.%s.__ __.%s.__ return', type, type),
+    builtInConstants = sprintf('n=m.arrayToMap("__.%s.__ __.%s.__ ...', type, type),
     stop("something went wrong")
   )
   all_new <- TRUE
@@ -257,15 +273,8 @@ if (any(m > 0)) {
   all_new <- FALSE
 }
 
-cat("i finding __.keywords.__\n")
-pat <- sprintf(
-  "(?<=__.keywords.__).*(?=__.keywords.__ %s)",
-  switch(
-    type,
-    specialFunctions = "return",
-    builtInConstants = "...",
-    stop("something went wrong")
-  )
+cat("i finding __.", type, ".__\n", sep = "")
+pat <- sprintf("(?<=__.%s.__).*(?=__.%s.__)", type, type)
 
 m <- regexpr(pat, x, perl = TRUE)
 
@@ -284,7 +293,7 @@ if (any(m > 0)) {
   new <- paste0(" ", paste0(new, collapse = " "), " ")
   regmatches(x, m) <- new
   cat("i modifying ", js, "\n")
-  # writeLines(x, js)
+  writeLines(x, js)
 }
 
 cat("i Restart RStudio to see effects\n")
