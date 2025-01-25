@@ -255,7 +255,7 @@ cat("i finding list in ", js, "\n")
 pat <- switch(
   type,
   specialFunctions = 'f=m.arrayToMap("return',
-  builtInConstants = 'n=m.arrayToMap("...',
+  builtInConstants = 'n=m.arrayToMap("NULL',
   stop("something went wrong")
 )
 
@@ -265,7 +265,7 @@ if (any(m > 0)) {
   regmatches(x, m) <- switch(
     type,
     specialFunctions = sprintf('f=m.arrayToMap("__.%s.__ __.%s.__ return', type, type),
-    builtInConstants = sprintf('n=m.arrayToMap("__.%s.__ __.%s.__ ...', type, type),
+    builtInConstants = sprintf('n=m.arrayToMap("__.%s.__ __.%s.__ NULL', type, type),
     stop("something went wrong")
   )
   all_new <- TRUE
