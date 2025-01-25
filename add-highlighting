@@ -245,7 +245,7 @@ x <- readLines(js, warn = FALSE)
 
 if (reset) {
   cat("i resetting keywords\n")
-  x <- gsub(sprintf("__[.]%s%[.]__.*__[.]%s%[.]__\\s+", type, type), "", x)
+  x <- gsub(sprintf("__[.]%s[.]__.*__[.]%s[.]__\\s+", type, type), "", x)
   writeLines(x, js)
   quit("no")
 }
