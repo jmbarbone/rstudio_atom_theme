@@ -29,7 +29,7 @@ DEFAULTS <- list(
     "debug",
     "debugonce",
     "loadNamespace",
-    "match.args",
+    "match.arg",
     "message",
     "missing",
     "options",
