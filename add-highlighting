@@ -232,7 +232,9 @@ ok <- vapply(
     find <- function(pat) grepl(pat, text, fixed = TRUE)
     find("mode/r_highlight_rules") &&
       # this should be good enough, right?
-      find("return switch try tryCatch stop warning require library attach")
+      find("return switch try tryCatch") &&
+      find("stop warning message") &&
+      find("require library attach detach")
   },
   NA
 )
@@ -290,6 +292,7 @@ if (any(m > 0)) {
     }
     new <- unique(c(old, new))
   }
+  
   cat("i adding ", toString(new), "\n")
   new <- paste0(" ", paste0(new, collapse = " "), " ")
   regmatches(x, m) <- new
