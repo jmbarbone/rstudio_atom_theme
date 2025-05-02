@@ -202,7 +202,8 @@ if (reset) {
   }
 }
 
-# find
+# find file with a matching pattern
+# review https://github.com/rstudio/rstudio/blob/main/src/gwt/acesupport/acemode/r_highlight_rules.js#L195-L220
 files <- list.files(
   switch(
     .Platform$OS.type,
